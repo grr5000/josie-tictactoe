@@ -9,7 +9,7 @@
 :root{--ink:#17316b;--muted:#64748b;--line:#eadfca;--gold:#ffd95a;--bg1:#dff4ff;--bg2:#fff9e8}
 *{box-sizing:border-box}
 body{margin:0;min-height:100vh;font-family:ui-rounded,"SF Pro Rounded","Arial Rounded MT Bold",system-ui,sans-serif;color:var(--ink);background:linear-gradient(180deg,var(--bg1),var(--bg2) 46%,#f3ffd9);-webkit-tap-highlight-color:transparent}
-button,select{font:inherit}
+button,select,input{font:inherit}
 .app{width:min(100%,480px);margin:0 auto;padding:18px 16px 28px}
 .hero{text-align:center;padding:8px 6px 14px}
 h1{font-size:clamp(34px,10vw,48px);line-height:.95;margin:0;font-weight:1000;letter-spacing:-.05em}
@@ -30,9 +30,14 @@ h1 span:nth-child(1){color:#2f80ed}h1 span:nth-child(2){color:#ff7a2f}h1 span:nt
 .btn{border:none;border-radius:16px;min-height:50px;font-weight:1000;padding:0 16px;cursor:pointer}
 .primary{flex:1;background:linear-gradient(180deg,#25c865,#19a94f);color:white;box-shadow:0 8px 18px rgba(25,169,79,.2)}
 .secondary{background:white;color:var(--ink);box-shadow:inset 0 0 0 1px var(--line)}
-.theme{display:flex;align-items:center;gap:10px;margin-top:12px;background:rgba(255,255,255,.75);padding:10px;border-radius:16px}
-.theme label{font-size:13px;font-weight:900}
-select{flex:1;min-width:0;border:1px solid var(--line);background:white;border-radius:12px;min-height:44px;padding:0 10px;color:var(--ink);font-weight:800}
+.settings{display:grid;gap:10px;margin-top:12px}
+.names,.theme{background:rgba(255,255,255,.75);padding:10px;border-radius:16px}
+.names{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.field label,.theme label{display:block;font-size:12px;font-weight:900;color:#526076;margin-bottom:6px}
+input,select{width:100%;min-width:0;border:1px solid var(--line);background:white;border-radius:12px;min-height:44px;padding:0 10px;color:var(--ink);font-weight:800;font-size:16px}
+.theme{display:flex;align-items:center;gap:10px}
+.theme label{margin:0}
+.theme select{flex:1}
 .footer{text-align:center;color:#64748b;font-size:12px;font-weight:700;margin-top:16px}
 @media (prefers-reduced-motion:no-preference){.pop{animation:pop .42s ease both}@keyframes pop{0%{transform:scale(.65);opacity:0}70%{transform:scale(1.12)}100%{transform:scale(1);opacity:1}}}
 </style>
@@ -45,9 +50,9 @@ select{flex:1;min-width:0;border:1px solid var(--line);background:white;border-r
 </section>
 
 <section class="score" aria-label="Scoreboard">
-<div id="kidCard" class="card active"><div id="kidPiece" class="piece">🦁</div><div class="name">Kid</div><div id="kidWins" class="wins">0</div></div>
+<div id="kidCard" class="card active"><div id="kidPiece" class="piece">🦁</div><div id="kidNameDisplay" class="name">Kid</div><div id="kidWins" class="wins">0</div></div>
 <div class="vs">VS</div>
-<div id="parentCard" class="card"><div id="parentPiece" class="piece">🐘</div><div class="name">Parent</div><div id="parentWins" class="wins">0</div></div>
+<div id="parentCard" class="card"><div id="parentPiece" class="piece">🐘</div><div id="parentNameDisplay" class="name">Parent</div><div id="parentWins" class="wins">0</div></div>
 </section>
 
 <div id="celebrate" class="celebrate" aria-hidden="true"></div>
@@ -70,16 +75,29 @@ select{flex:1;min-width:0;border:1px solid var(--line);background:white;border-r
 <button id="resetScore" class="btn secondary">Reset</button>
 </div>
 
-<div class="theme">
-<label for="theme">Pieces</label>
-<select id="theme">
-<option value="animals">🦁 Kid vs 🐘 Parent</option>
-<option value="classic">❌ Kid vs ⭕ Parent</option>
-<option value="space">🚀 Kid vs 🪐 Parent</option>
-<option value="sports">⚽ Kid vs 🏀 Parent</option>
-<option value="sweet">💖 Kid vs ⭐ Parent</option>
-<option value="dino">🦖 Kid vs 🦕 Parent</option>
-</select>
+<div class="settings">
+  <div class="names">
+    <div class="field">
+      <label for="kidName">Kid name</label>
+      <input id="kidName" maxlength="18" value="Kid" autocomplete="off" aria-label="Kid player name">
+    </div>
+    <div class="field">
+      <label for="parentName">Parent name</label>
+      <input id="parentName" maxlength="18" value="Parent" autocomplete="off" aria-label="Parent player name">
+    </div>
+  </div>
+
+  <div class="theme">
+  <label for="theme">Pieces</label>
+  <select id="theme">
+  <option value="animals">🦁 / 🐘 Animals</option>
+  <option value="classic">❌ / ⭕ Classic</option>
+  <option value="space">🚀 / 🪐 Space</option>
+  <option value="sports">⚽ / 🏀 Sports</option>
+  <option value="sweet">💖 / ⭐ Sweet</option>
+  <option value="dino">🦖 / 🦕 Dinosaurs</option>
+  </select>
+  </div>
 </div>
 
 <div class="footer">Made for playing together.</div>
@@ -95,11 +113,39 @@ const kidWins=document.getElementById('kidWins');
 const parentWins=document.getElementById('parentWins');
 const kidPiece=document.getElementById('kidPiece');
 const parentPiece=document.getElementById('parentPiece');
+const kidNameInput=document.getElementById('kidName');
+const parentNameInput=document.getElementById('parentName');
+const kidNameDisplay=document.getElementById('kidNameDisplay');
+const parentNameDisplay=document.getElementById('parentNameDisplay');
 const theme=document.getElementById('theme');
+
+const STORAGE_KEY='ticTacTogetherPrefs';
 const themes={animals:['🦁','🐘'],classic:['❌','⭕'],space:['🚀','🪐'],sports:['⚽','🏀'],sweet:['💖','⭐'],dino:['🦖','🦕']};
 const winLines=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
 let board=Array(9).fill(''),turn=0,ended=false,scores=[0,0],pieces=themes.animals,starter=0;
+let names=['Kid','Parent'];
 
+function cleanName(value,fallback){
+  const v=(value||'').trim().replace(/s+/g,' ').slice(0,18);
+  return v||fallback;
+}
+function savePrefs(){
+  try{
+    localStorage.setItem(STORAGE_KEY,JSON.stringify({kid:names[0],parent:names[1],theme:theme.value}));
+  }catch{}
+}
+function loadPrefs(){
+  try{
+    const raw=localStorage.getItem(STORAGE_KEY);
+    if(!raw) return;
+    const prefs=JSON.parse(raw);
+    names=[cleanName(prefs.kid,'Kid'),cleanName(prefs.parent,'Parent')];
+    if(prefs.theme && themes[prefs.theme]) theme.value=prefs.theme;
+  }catch{}
+  pieces=themes[theme.value]||themes.animals;
+  kidNameInput.value=names[0];
+  parentNameInput.value=names[1];
+}
 function findWinner(){
   for(const line of winLines){
     const [a,b,c]=line;
@@ -115,11 +161,13 @@ function render(){
   });
   kidPiece.textContent=pieces[0];
   parentPiece.textContent=pieces[1];
+  kidNameDisplay.textContent=names[0];
+  parentNameDisplay.textContent=names[1];
   kidWins.textContent=scores[0];
   parentWins.textContent=scores[1];
   kidCard.classList.toggle('active',!ended&&turn===0);
   parentCard.classList.toggle('active',!ended&&turn===1);
-  if(!ended) statusEl.textContent=(turn===0?"Kid's":"Parent's")+' turn '+pieces[turn];
+  if(!ended) statusEl.textContent=names[turn]+"'s turn "+pieces[turn];
 }
 function play(i){
   if(ended||board[i]) return;
@@ -128,7 +176,7 @@ function play(i){
   if(win){
     ended=true;scores[win.player]++;render();
     win.line.forEach(n=>cells[n].classList.add('win'));
-    statusEl.textContent=(win.player===0?'Kid':'Parent')+' wins! 🎉';
+    statusEl.textContent=names[win.player]+' wins! 🎉';
     celebrate.textContent='🎉 ✨ 🎊 ✨ 🎉';
     celebrate.classList.remove('pop');void celebrate.offsetWidth;celebrate.classList.add('pop');
     return;
@@ -141,14 +189,28 @@ function play(i){
 function newRound(){
   board=Array(9).fill('');ended=false;starter=1-starter;turn=starter;celebrate.textContent='';render();
 }
+function updateNames(){
+  names=[cleanName(kidNameInput.value,'Kid'),cleanName(parentNameInput.value,'Parent')];
+  kidNameInput.value=names[0];
+  parentNameInput.value=names[1];
+  savePrefs();
+  render();
+}
+
 cells.forEach(c=>c.addEventListener('click',()=>play(Number(c.dataset.i))));
 document.getElementById('newRound').addEventListener('click',newRound);
 document.getElementById('resetScore').addEventListener('click',()=>{
   scores=[0,0];board=Array(9).fill('');ended=false;starter=0;turn=0;celebrate.textContent='';render();
 });
+kidNameInput.addEventListener('change',updateNames);
+parentNameInput.addEventListener('change',updateNames);
+kidNameInput.addEventListener('blur',updateNames);
+parentNameInput.addEventListener('blur',updateNames);
 theme.addEventListener('change',()=>{
-  pieces=themes[theme.value]||themes.animals;board=Array(9).fill('');ended=false;celebrate.textContent='';render();
+  pieces=themes[theme.value]||themes.animals;board=Array(9).fill('');ended=false;celebrate.textContent='';savePrefs();render();
 });
+
+loadPrefs();
 render();
 </script>
 </body>
