@@ -20,6 +20,13 @@ h1 span:nth-child(1){color:#2f80ed}h1 span:nth-child(2){color:#ff7a2f}h1 span:nt
 .card.active{outline:4px solid var(--gold);transform:translateY(-1px)}
 .piece{font-size:36px;line-height:1}.name{font-size:14px;font-weight:900;margin-top:4px}.wins{font-size:28px;font-weight:1000}
 .vs{font-weight:1000;color:#6b7280}
+.score-wrap{position:relative}
+.edit-names-btn{position:absolute;top:-4px;right:2px;border:none;background:rgba(255,255,255,.9);width:40px;height:40px;border-radius:14px;display:grid;place-items:center;font-size:19px;box-shadow:0 5px 14px rgba(23,49,107,.09);cursor:pointer}
+.edit-names-btn:active{transform:scale(.96)}
+.name-editor{display:none;grid-template-columns:1fr 1fr;gap:10px;background:rgba(255,255,255,.86);padding:10px;border-radius:16px;margin:-2px 0 12px;box-shadow:0 6px 18px rgba(23,49,107,.07)}
+.name-editor.open{display:grid}
+.name-editor-actions{grid-column:1/-1;display:flex;justify-content:flex-end}
+.done-btn{border:none;background:#17316b;color:white;border-radius:12px;min-height:42px;padding:0 16px;font-weight:900;cursor:pointer}
 .status{text-align:center;font-size:20px;font-weight:1000;min-height:32px;margin:8px 0 10px}
 .celebrate{text-align:center;min-height:34px;font-size:28px}
 .board{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;background:rgba(255,255,255,.5);padding:10px;border-radius:28px}
@@ -49,11 +56,28 @@ input,select{width:100%;min-width:0;border:1px solid var(--line);background:whit
 <p class="sub">No ads. No distractions. Just play together. 💛</p>
 </section>
 
+<div class="score-wrap">
+<button id="editNames" class="edit-names-btn" type="button" aria-label="Edit player names" aria-expanded="false">✏️</button>
 <section class="score" aria-label="Scoreboard">
 <div id="kidCard" class="card active"><div id="kidPiece" class="piece">🦁</div><div id="kidNameDisplay" class="name">Kid</div><div id="kidWins" class="wins">0</div></div>
 <div class="vs">VS</div>
 <div id="parentCard" class="card"><div id="parentPiece" class="piece">🐘</div><div id="parentNameDisplay" class="name">Parent</div><div id="parentWins" class="wins">0</div></div>
 </section>
+</div>
+
+<div id="nameEditor" class="name-editor" aria-hidden="true">
+  <div class="field">
+    <label for="kidName">Kid name</label>
+    <input id="kidName" maxlength="18" value="Kid" autocomplete="off" aria-label="Kid player name">
+  </div>
+  <div class="field">
+    <label for="parentName">Parent name</label>
+    <input id="parentName" maxlength="18" value="Parent" autocomplete="off" aria-label="Parent player name">
+  </div>
+  <div class="name-editor-actions">
+    <button id="doneNames" class="done-btn" type="button">Done</button>
+  </div>
+</div>
 
 <div id="celebrate" class="celebrate" aria-hidden="true"></div>
 <div id="status" class="status" aria-live="polite">Kid's turn 🦁</div>
@@ -76,17 +100,6 @@ input,select{width:100%;min-width:0;border:1px solid var(--line);background:whit
 </div>
 
 <div class="settings">
-  <div class="names">
-    <div class="field">
-      <label for="kidName">Kid name</label>
-      <input id="kidName" maxlength="18" value="Kid" autocomplete="off" aria-label="Kid player name">
-    </div>
-    <div class="field">
-      <label for="parentName">Parent name</label>
-      <input id="parentName" maxlength="18" value="Parent" autocomplete="off" aria-label="Parent player name">
-    </div>
-  </div>
-
   <div class="theme">
   <label for="theme">Pieces</label>
   <select id="theme">
@@ -118,6 +131,9 @@ const parentNameInput=document.getElementById('parentName');
 const kidNameDisplay=document.getElementById('kidNameDisplay');
 const parentNameDisplay=document.getElementById('parentNameDisplay');
 const theme=document.getElementById('theme');
+const editNamesBtn=document.getElementById('editNames');
+const doneNamesBtn=document.getElementById('doneNames');
+const nameEditor=document.getElementById('nameEditor');
 
 const STORAGE_KEY='ticTacTogetherPrefs';
 const themes={animals:['🦁','🐘'],classic:['❌','⭕'],space:['🚀','🪐'],sports:['⚽','🏀'],sweet:['💖','⭐'],dino:['🦖','🦕']};
@@ -204,8 +220,18 @@ document.getElementById('resetScore').addEventListener('click',()=>{
 });
 kidNameInput.addEventListener('change',updateNames);
 parentNameInput.addEventListener('change',updateNames);
-kidNameInput.addEventListener('blur',updateNames);
-parentNameInput.addEventListener('blur',updateNames);
+
+function setNameEditor(open){
+  nameEditor.classList.toggle('open',open);
+  nameEditor.setAttribute('aria-hidden',String(!open));
+  editNamesBtn.setAttribute('aria-expanded',String(open));
+  if(open) kidNameInput.focus();
+}
+editNamesBtn.addEventListener('click',()=>setNameEditor(!nameEditor.classList.contains('open')));
+doneNamesBtn.addEventListener('click',()=>{
+  updateNames();
+  setNameEditor(false);
+});
 theme.addEventListener('change',()=>{
   pieces=themes[theme.value]||themes.animals;board=Array(9).fill('');ended=false;celebrate.textContent='';savePrefs();render();
 });
