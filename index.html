@@ -140,7 +140,7 @@ let board=Array(9).fill(''),turn=0,ended=false,scores=[0,0],pieces=themes.animal
 let names=['Kid','Parent'];
 
 function cleanName(value,fallback){
-  const v=(value||'').trim().replace(/s+/g,' ').slice(0,18);
+  const v=(value||'').trim().replace(/\s+/g,' ').slice(0,18);
   return v||fallback;
 }
 function savePrefs(){
